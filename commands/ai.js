@@ -1,7 +1,9 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 module.exports = async (bot, chatId, args) => {
-  const prompt = args.join(' ');
+  // FIX: Handle undefined 'args' by defaulting to an empty array
+  const safeArgs = args || [];
+  const prompt = safeArgs.join(' ');
 
   if (!prompt) {
     return bot.sendMessage(chatId, '❌ Please ask me anything! Example: `.ai Explain quantum computing`');
