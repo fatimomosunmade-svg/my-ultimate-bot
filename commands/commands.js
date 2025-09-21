@@ -5,6 +5,8 @@ const startCommand = require('./start');
 const helpCommand = require('./help');
 const jokeCommand = require('./joke');
 const quoteCommand = require('./quote');
+const weatherCommand = require('./weather');
+const aiCommand = require('./ai'); // <-- Import the new AI command
 
 // Define a list of all commands and their corresponding functions
 const commandList = {
@@ -16,7 +18,10 @@ const commandList = {
   '.joke': jokeCommand,
   '/quote': quoteCommand,
   '.quote': quoteCommand,
-  // We will add more here as we create them
+  '/weather': weatherCommand,
+  '.weather': weatherCommand,
+  '/ai': aiCommand, // <-- Add the new commands
+  '.ai': aiCommand,  // <-- Add the new commands
 };
 
 // This function takes a command name (e.g., '/joke') and returns the function to run
