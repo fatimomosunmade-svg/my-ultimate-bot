@@ -1,0 +1,11 @@
+# render.yaml
+services:
+  - type: web
+    name: ultimate-telegram-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false # This means you will set the value manually in the Render dashboard
