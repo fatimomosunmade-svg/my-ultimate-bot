@@ -5,7 +5,7 @@ const startCommand = require('./start');
 const helpCommand = require('./help');
 const jokeCommand = require('./joke');
 const quoteCommand = require('./quote');
-const weatherCommand = require('./weather');
+// const weatherCommand = require('./weather'); // REMOVED THIS LINE
 const aiCommand = require('./ai'); // <-- Import the new AI command
 
 // Define a list of all commands and their corresponding functions
@@ -18,8 +18,8 @@ const commandList = {
   '.joke': jokeCommand,
   '/quote': quoteCommand,
   '.quote': quoteCommand,
-  '/weather': weatherCommand,
-  '.weather': weatherCommand,
+  // '/weather': weatherCommand, // REMOVED THIS LINE
+  // '.weather': weatherCommand, // REMOVED THIS LINE
   '/ai': aiCommand, // <-- Add the new commands
   '.ai': aiCommand,  // <-- Add the new commands
 };
