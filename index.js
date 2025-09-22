@@ -39,7 +39,8 @@ bot.onText(/^[\/\.]/, (msg) => {
 
   if (commandFunction) {
     // Pass the arguments array safely. It will always be an array, never undefined.
-    commandFunction(bot, chatId, args);
+    // Also pass the original msg object as the 4th argument for commands that need it (like .roast)
+    commandFunction(bot, chatId, args, msg);
   } else {
     bot.sendMessage(chatId, `❌ Sorry, I don't know the command "${primaryCommand}". Try /help to see what I can do.`);
   }
