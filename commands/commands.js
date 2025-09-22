@@ -11,6 +11,7 @@ const roastCommand = require('./roast');
 const ball8Command = require('./8ball');
 const simprateCommand = require('./simprate'); // <-- NEW
 const shipCommand = require('./ship');         // <-- NEW
+const songCommand = require('./song');
 
 // Define a list of all commands and their corresponding functions
 const commandList = {
@@ -34,6 +35,8 @@ const commandList = {
   '.simprate': simprateCommand, // <-- NEW
   '/ship': shipCommand,         // <-- NEW
   '.ship': shipCommand,         // <-- NEW
+  '/song': songCommand,
+  '.song': songCommand,
 };
 
 // This function takes a command name (e.g., '/joke') and returns the function to run
