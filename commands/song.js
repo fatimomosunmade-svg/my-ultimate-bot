@@ -11,51 +11,37 @@ module.exports = async (bot, chatId, args) => {
     await bot.sendChatAction(chatId, 'typing');
 
     try {
-        // Step 1: Search YouTube for the song
-        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(songQuery + ' official audio')}`;
-        const response = await axios.get(searchUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
+        const apiKey = process.env.YOUTUBE_API_KEY;
         
-        const html = response.data;
+        // Step 1: Search YouTube using the OFFICIAL API (No scraping!)
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(songQuery + ' official audio')}&type=video&key=${apiKey}`;
         
-        // Extract video ID using regex
-        const videoIdRegex = /"videoId":"([a-zA-Z0-9_-]{11})"/;
-        const match = html.match(videoIdRegex);
+        const searchResponse = await axios.get(searchUrl);
+        const videoId = searchResponse.data.items[0].id.videoId;
+        const title = searchResponse.data.items[0].snippet.title;
         
-        if (!match || !match[1]) {
-            throw new Error('No video found');
-        }
-
-        const videoId = match[1];
         const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        
-        // Step 2: Create download link using a converter service
-        // Using y2mate.com service (you can change to any other converter)
-        const downloadPageUrl = `https://www.y2mate.com/youtube/${videoId}`;
+
+        // Step 2: Create a CLEAN, safe download link using a reputable service
+        // Using ssyoutube.com (much cleaner than y2mate)
+        const safeDownloadUrl = `https://ssyoutube.com/watch?v=${videoId}`;
         
         const message = `
-🎵 *Song Found:* ${songQuery}
+🎵 *Song Found:* ${title}
 
-⬇️ *Download Your Song:*
-${downloadPageUrl}
+▶️ *Watch on YouTube:*
+${youtubeUrl}
 
-💡 *Instructions:*
-1. Click the link above
-2. Select MP3 format
-3. Click Download
-4. Wait a few seconds
-5. Get your music!
+⬇️ *Download Safely:*
+${safeDownloadUrl}
 
-*Note:* This service converts YouTube videos to MP3. Please respect copyrights.
+💡 *Note:* Use the download link above for a clean, ad-free experience. The download service is provided by ssyoutube.com.
         `;
 
         await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
 
     } catch (error) {
         console.error('Song error:', error);
-        await bot.sendMessage(chatId, `❌ Could not find "${songQuery}". Try a different song name or check your spelling.`);
+        await bot.sendMessage(chatId, `❌ Could not find "${songQuery}". Try a different song name.`);
     }
 };
