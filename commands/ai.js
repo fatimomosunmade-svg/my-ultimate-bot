@@ -1,47 +1,48 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// commands/ai.js
+const axios = require('axios');
 
 module.exports = async (bot, chatId, args) => {
-  console.log("AI command called. Args received:", args); // DEBUG LINE
+    const prompt = args.join(' ');
 
-  // FIX: Handle undefined 'args' by defaulting to an empty array
-  const safeArgs = args || [];
-  const prompt = safeArgs.join(' ').trim(); // Added .trim() to remove any accidental spaces
-
-  console.log("Prompt formed:", prompt); // DEBUG LINE
-
-  if (!prompt) {
-    // This will tell us exactly what went wrong
-    console.log("Prompt was empty! Triggering error message.");
-    return bot.sendMessage(chatId, '❌ Please ask me anything! Example: `.ai Explain quantum computing`');
-  }
-
-  await bot.sendChatAction(chatId, 'typing');
-
-  try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Split long messages for Telegram
-    if (text.length > 4096) {
-      for (let i = 0; i < text.length; i += 4096) {
-        await bot.sendMessage(chatId, text.substring(i, i + 4096));
-      }
-    } else {
-      await bot.sendMessage(chatId, text);
+    if (!prompt) {
+        return bot.sendMessage(chatId, '❌ Please ask me anything! Example: `.ai Explain quantum computing`');
     }
 
-  } catch (error) {
-    console.error('Gemini Error:', error);
-    // More specific error message
-    const errorMessage = '❌ Sorry, I had a brain freeze. ';
-    if (error.message.includes('API_KEY')) {
-      await bot.sendMessage(chatId, errorMessage + 'My API key is missing or invalid. Did you add GEMINI_API_KEY to Render?');
-    } else {
-      await bot.sendMessage(chatId, errorMessage + 'Please try again later.');
+    await bot.sendChatAction(chatId, 'typing');
+
+    try {
+        const response = await axios.post(
+            'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
+            { inputs: prompt },
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 30000
+            }
+        );
+
+        let aiResponse = response.data.generated_text;
+        
+        if (!aiResponse) {
+            aiResponse = "I'm not sure how to respond to that. Try asking me something else!";
+        }
+
+        // If response is too long, truncate it
+        if (aiResponse.length > 4000) {
+            aiResponse = aiResponse.substring(0, 4000) + '...';
+        }
+
+        await bot.sendMessage(chatId, `🤖 ${aiResponse}`);
+
+    } catch (error) {
+        console.error('AI Error:', error);
+        
+        if (error.response?.status === 503) {
+            await bot.sendMessage(chatId, '🔄 AI model is waking up... Try again in 20 seconds!');
+        } else {
+            await bot.sendMessage(chatId, '❌ AI service error. Try again later!');
+        }
     }
-  }
 };
