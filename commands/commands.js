@@ -14,6 +14,7 @@ const shipCommand = require('./ship');         // <-- NEW
 const songCommand = require('./song');
 const myidCommand = require('./myid');
 const memeCommand = require('./meme');
+const riddleCommand = require('./riddle');
 
 // Define a list of all commands and their corresponding functions
 const commandList = {
@@ -43,6 +44,8 @@ const commandList = {
   '.meme': memeCommand,
   '/myid': myidCommand,
   '.myid': myidCommand,
+  '/riddle': riddleCommand,
+  '.riddle': riddleCommand,
 };
 
 // This function takes a command name (e.g., '/joke') and returns the function to run

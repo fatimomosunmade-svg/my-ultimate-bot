@@ -1,0 +1,28 @@
+{
+  "easy": [
+    {
+      "question": "I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?",
+      "answer": "echo",
+      "hints": ["It's a sound phenomenon", "You hear it in mountains"]
+    },
+    {
+      "question": "The more you take, the more you leave behind. What am I?",
+      "answer": "footsteps",
+      "hints": ["Think about walking", "They're on the ground"]
+    }
+  ],
+  "medium": [
+    {
+      "question": "I am always hungry, I must always be fed. The finger I touch, will soon turn red. What am I?",
+      "answer": "fire",
+      "hints": ["It can be dangerous", "You light it"]
+    }
+  ],
+  "hard": [
+    {
+      "question": "What can run but never walks, has a mouth but never talks, has a head but never weeps, has a bed but never sleeps?",
+      "answer": "river",
+      "hints": ["It's a body of water", "It flows"]
+    }
+  ]
+}
