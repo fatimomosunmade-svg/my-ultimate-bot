@@ -7,8 +7,10 @@ const jokeCommand = require('./joke');
 const quoteCommand = require('./quote');
 const weatherCommand = require('./weather');
 const calcCommand = require('./calc');
-const roastCommand = require('./roast'); // <-- NEW
-const ball8Command = require('./8ball');  // <-- NEW
+const roastCommand = require('./roast');
+const ball8Command = require('./8ball');
+const simprateCommand = require('./simprate'); // <-- NEW
+const shipCommand = require('./ship');         // <-- NEW
 
 // Define a list of all commands and their corresponding functions
 const commandList = {
@@ -24,10 +26,14 @@ const commandList = {
   '.weather': weatherCommand,
   '/calc': calcCommand,
   '.calc': calcCommand,
-  '/roast': roastCommand, // <-- NEW
-  '.roast': roastCommand, // <-- NEW
-  '/8ball': ball8Command, // <-- NEW
-  '.8ball': ball8Command, // <-- NEW
+  '/roast': roastCommand,
+  '.roast': roastCommand,
+  '/8ball': ball8Command,
+  '.8ball': ball8Command,
+  '/simprate': simprateCommand, // <-- NEW
+  '.simprate': simprateCommand, // <-- NEW
+  '/ship': shipCommand,         // <-- NEW
+  '.ship': shipCommand,         // <-- NEW
 };
 
 // This function takes a command name (e.g., '/joke') and returns the function to run
