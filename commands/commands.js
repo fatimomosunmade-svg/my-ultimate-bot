@@ -19,6 +19,7 @@ const triviaCommand = require('./trivia');
 const wyrCommand = require('./wyr');
 const factCommand = require('./fact');
 const toolsCommand = require('./tools');
+const aiCommand = require('./ai');
 
 // Define a list of all commands and their corresponding functions
 const commandList = {
@@ -58,6 +59,8 @@ const commandList = {
   '.fact': factCommand,
   '/tools': toolsCommand,
   '.tools': toolsCommand,
+  '/ai': aiCommand,
+  '.ai': aiCommand,
 };
 
 // This function takes a command name (e.g., '/joke') and returns the function to run

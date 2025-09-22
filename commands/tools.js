@@ -64,6 +64,19 @@ module.exports = async (bot, chatId, args) => {
                 }
                 break;
 
+            // Add this case to the existing switch statement
+           case 'password':
+    const length = parseInt(args[1]) || 12;
+    if (length < 4 || length > 50) {
+        result = '❌ Password length must be between 4 and 50';
+    } else {
+        const password = generatePassword(length);
+        const strength = checkPasswordStrength(password);
+        result = `🔐 *Generated Password:*\n\`${password}\`\n\n` +
+                `💪 *Strength:* ${strength}\n` +
+                `📏 *Length:* ${length} characters`;
+    }
+    break;
             default:
                 result = '❌ Unknown tool. Use `.tools` to see available options.';
         }
