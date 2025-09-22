@@ -1,7 +1,6 @@
 // ------- Section 1: Import Dependencies -------
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
-const path = require('path');
 require('dotenv').config();
 
 // Import our command handler
@@ -16,27 +15,37 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 app.use(express.json());
 app.use(express.static('public'));
 
-// ------- Section 4: The Bot's Brain (Using the Handler) -------
+// ------- Section 4: The Bot's Brain (Fixed and Robust) -------
 bot.onText(/^[\/\.]/, (msg) => {
   const chatId = msg.chat.id;
-  const fullCommand = msg.text; // e.g., "/joke"
-  const commandParts = fullCommand.split(' '); // In case of commands with arguments later
-  const primaryCommand = commandParts[0]; // This is "/joke"
+  const fullText = msg.text; // e.g., ".weather London" or "/calc 2+2"
+
+  // A more robust way to split the command from its arguments
+  // This regex splits on the first space only, keeping the rest as the argument string
+  const match = fullText.match(/^([\/\.]\S+)(?:\s+(.*))?$/);
+
+  if (!match) {
+    return; // If it doesn't match our pattern, do nothing.
+  }
+
+  const primaryCommand = match[1]; // This is ".weather"
+  const argumentString = match[2] || ''; // This is "London" or an empty string if no args
+
+  // Split the argument string into an array of words
+  const args = argumentString ? argumentString.split(' ') : [];
 
   // Get the function for this command from our handler
   const commandFunction = commandHandler.getCommand(primaryCommand);
 
   if (commandFunction) {
-    // If we found the command, run it and pass the bot and chatId
-    commandFunction(bot, chatId);
+    // Pass the arguments array safely. It will always be an array, never undefined.
+    commandFunction(bot, chatId, args);
   } else {
-    // If the command wasn't found in our list
     bot.sendMessage(chatId, `❌ Sorry, I don't know the command "${primaryCommand}". Try /help to see what I can do.`);
   }
 });
 
 // ------- Section 5: The Dummy Web Server for Render -------
-// This is a simple route to make Render happy and show something on the web.
 app.get('/', (req, res) => {
   res.send(`
     <html>
