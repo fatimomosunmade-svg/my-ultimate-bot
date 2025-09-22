@@ -5,6 +5,7 @@ require('dotenv').config();
 
 // Import our command handler
 const commandHandler = require('./commands/commands');
+const RiddleGame = require('./games/riddleGame'); // <-- NEW IMPORT
 
 // ------- Section 2: Initialize Everything -------
 const app = express();
@@ -43,6 +44,47 @@ bot.onText(/^[\/\.]/, (msg) => {
     commandFunction(bot, chatId, args, msg);
   } else {
     bot.sendMessage(chatId, `❌ Sorry, I don't know the command "${primaryCommand}". Try /help to see what I can do.`);
+  }
+});
+
+// ------- NEW SECTION: Riddle Game Message Listener -------
+// This listens to ALL messages to check if they're answers to active riddles
+bot.on('message', (msg) => {
+  // Ignore command messages (they're handled by the onText above)
+  if (msg.text && (msg.text.startsWith('/') || msg.text.startsWith('.'))) {
+    return;
+  }
+
+  const chatId = msg.chat.id;
+  const userAnswer = msg.text;
+
+  // Check if there's an active riddle game in this chat
+  const currentGame = RiddleGame.getCurrentGame(chatId);
+  
+  if (currentGame && userAnswer) {
+    // Process the answer
+    const result = RiddleGame.checkAnswer(chatId, userAnswer);
+    
+    if (result.correct) {
+      const scores = RiddleGame.getScores(chatId);
+      const points = result.attempts === 1 ? '🎯 Perfect! ' : '';
+      
+      const message = `${points}✅ *CORRECT!* The answer is "${currentGame.riddle.answer}"!\n\n` +
+                    `📊 *Score for ${msg.from.first_name}:*\n` +
+                    `🟢 Easy: ${scores.easy} points\n` +
+                    `🟡 Medium: ${scores.medium} points\n` +
+                    `🔴 Hard: ${scores.hard} points\n\n` +
+                    `Type *.riddle* for another challenge!`;
+      
+      bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    }
+    else if (result.incorrect) {
+      const hintMsg = result.hint ? `\n💡 *Hint:* ${result.hint}` : '';
+      bot.sendMessage(chatId, `❌ Wrong answer! Attempts: ${result.attempts}/${result.maxAttempts}.${hintMsg}`, { parse_mode: 'Markdown' });
+    }
+    else if (result.failed) {
+      bot.sendMessage(chatId, `💀 *Game Over!* The correct answer was: "${result.correctAnswer}"\n\nType *.riddle* to try again!`, { parse_mode: 'Markdown' });
+    }
   }
 });
 
