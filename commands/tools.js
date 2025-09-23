@@ -3,8 +3,22 @@ const { encodeBase64, decodeBase64 } = require('../tools/base64Tool');
 const { getCurrentTimestamp, timestampToDate } = require('../tools/timestampTool');
 const { generateUUID } = require('../tools/uuidTool');
 const { prettifyJSON, validateJSON } = require('../tools/jsonTool');
+const { generateQRCode } = require('../tools/qrTool');
 
-// Add the password generator function HERE (at the top level)
+// QR Code Tool
+const axios = require('axios');
+async function generateQRCode(text) {
+    try {
+        const response = await axios.get(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`, {
+            responseType: 'arraybuffer'
+        });
+        return Buffer.from(response.data);
+    } catch (error) {
+        throw new Error('Failed to generate QR code');
+    }
+}
+
+// Password Generator
 function generatePassword(length = 12) {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
@@ -14,18 +28,15 @@ function generatePassword(length = 12) {
     const allChars = uppercase + lowercase + numbers + symbols;
     let password = '';
     
-    // Ensure at least one of each type
     password += uppercase[Math.floor(Math.random() * uppercase.length)];
     password += lowercase[Math.floor(Math.random() * lowercase.length)];
     password += numbers[Math.floor(Math.random() * numbers.length)];
     password += symbols[Math.floor(Math.random() * symbols.length)];
     
-    // Fill the rest randomly
     for (let i = 4; i < length; i++) {
         password += allChars[Math.floor(Math.random() * allChars.length)];
     }
     
-    // Shuffle the password
     return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
@@ -34,18 +45,7 @@ module.exports = async (bot, chatId, args) => {
     const input = args.slice(1).join(' ');
 
     if (!subCommand) {
-        const helpText = `🛠️ *Developer Tools*\n\n` +
-                        `Available commands:\n\n` +
-                        `• *.tools base64 <encode/decode> <text>* - Base64 encoding/decoding\n` +
-                        `• *.tools timestamp* - Get current Unix timestamp\n` +
-                        `• *.tools uuid* - Generate a UUID\n` +
-                        `• *.tools json <json_string>* - Prettify JSON\n` +
-                        `• *.tools password <length>* - Generate strong password\n\n` +
-                        `*Examples:*\n` +
-                        `.tools base64 encode hello world\n` +
-                        `.tools json {"name":"john","age":30}\n` +
-                        `.tools password 16`;
-
+        const helpText = `🛠️ *Developer Tools*\n\nAvailable commands:\n\n• .tools base64 <encode/decode> <text>\n• .tools timestamp\n• .tools uuid\n• .tools json <json_string>\n• .tools password <length>\n• .tools qrcode <text>\n\n*Examples:*\n.tools base64 encode hello world\n.tools qrcode https://google.com`;
         return bot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
     }
 
@@ -61,11 +61,9 @@ module.exports = async (bot, chatId, args) => {
                     result = `🔒 *Base64 Encoded:*\n\`${encodeBase64(text)}\``;
                 } else if (action === 'decode') {
                     const decoded = decodeBase64(text);
-                    result = decoded ? 
-                        `🔓 *Base64 Decoded:*\n\`${decoded}\`` : 
-                        '❌ Invalid Base64 string';
+                    result = decoded ? `🔓 *Base64 Decoded:*\n\`${decoded}\`` : '❌ Invalid Base64 string';
                 } else {
-                    result = '❌ Usage: `.tools base64 <encode/decode> <text>`';
+                    result = '❌ Usage: .tools base64 <encode/decode> <text>';
                 }
                 break;
 
@@ -85,9 +83,7 @@ module.exports = async (bot, chatId, args) => {
                     result = '❌ Please provide JSON to format';
                 } else {
                     const pretty = prettifyJSON(input);
-                    result = pretty ? 
-                        `📋 *Formatted JSON:*\n\`\`\`json\n${pretty}\n\`\`\`` : 
-                        '❌ Invalid JSON format';
+                    result = pretty ? `📋 *Formatted JSON:*\n\`\`\`json\n${pretty}\n\`\`\`` : '❌ Invalid JSON format';
                 }
                 break;
 
@@ -97,20 +93,34 @@ module.exports = async (bot, chatId, args) => {
                     result = '❌ Password length must be between 4 and 50';
                 } else {
                     const password = generatePassword(length);
-                    result = `🔐 *Generated Password:*\n\`${password}\`\n\n` +
-                            `📏 *Length:* ${length} characters\n` +
-                            `💡 *Save this password securely!*`;
+                    result = `🔐 *Generated Password:*\n\`${password}\`\n\n📏 *Length:* ${length} characters`;
+                }
+                break;
+
+            case 'qrcode':
+                if (!input) {
+                    result = '❌ Please provide text/URL for QR code. Example: .tools qrcode https://google.com';
+                } else {
+                    try {
+                        const qrBuffer = await generateQRCode(input);
+                        await bot.sendPhoto(chatId, qrBuffer, {
+                            caption: `📱 QR Code for: ${input}`
+                        });
+                        return;
+                    } catch (error) {
+                        result = '❌ Failed to generate QR code. Try a shorter text.';
+                    }
                 }
                 break;
 
             default:
-                result = '❌ Unknown tool. Use `.tools` to see available options.';
+                result = '❌ Unknown tool. Use .tools to see available options.';
         }
 
         bot.sendMessage(chatId, result, { parse_mode: 'Markdown' });
 
     } catch (error) {
         console.error('Tools error:', error);
-        bot.sendMessage(chatId, '❌ Error processing your request. Check your input format.');
+        bot.sendMessage(chatId, '❌ Error processing your request.');
     }
 };

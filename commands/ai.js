@@ -5,7 +5,7 @@ module.exports = async (bot, chatId, args) => {
     const prompt = args.join(' ');
 
     if (!prompt) {
-        return bot.sendMessage(chatId, '❌ Please ask me anything! Example: `.ai Explain quantum computing`');
+        return bot.sendMessage(chatId, '❌ Please ask me anything! Example: .ai What is AI?');
     }
 
     await bot.sendChatAction(chatId, 'typing');
@@ -29,7 +29,6 @@ module.exports = async (bot, chatId, args) => {
             aiResponse = "I'm not sure how to respond to that. Try asking me something else!";
         }
 
-        // If response is too long, truncate it
         if (aiResponse.length > 4000) {
             aiResponse = aiResponse.substring(0, 4000) + '...';
         }
@@ -38,11 +37,6 @@ module.exports = async (bot, chatId, args) => {
 
     } catch (error) {
         console.error('AI Error:', error);
-        
-        if (error.response?.status === 503) {
-            await bot.sendMessage(chatId, '🔄 AI model is waking up... Try again in 20 seconds!');
-        } else {
-            await bot.sendMessage(chatId, '❌ AI service error. Try again later!');
-        }
+        await bot.sendMessage(chatId, '❌ AI service error. Try again in 30 seconds!');
     }
 };
